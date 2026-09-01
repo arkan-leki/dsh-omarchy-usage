@@ -44,17 +44,15 @@ omarchy-shell shell reloadConfig   # or: omarchy refresh
 
 ## Enable in the agents panel (important)
 
-The agents widget **self-hides when no agents are enabled**. You must add `dsh` to the
-providers config of the `omarchy.agents` widget in `~/.config/omarchy/shell.json`:
+The agents widget only shows enabled agents. Add `dsh` to the providers config of the
+`omarchy.agents` widget in `~/.config/omarchy/shell.json` — **keep your existing
+agents; just add dsh** (any agent not listed defaults to enabled):
 
 ```json
 {
   "id": "omarchy.agents",
   "providers": {
-    "claude":    {"enabled": false},
-    "codex":     {"enabled": false},
-    "fireworks": {"enabled": false},
-    "dsh":       {"enabled": true}
+    "dsh": {"enabled": true}
   }
 }
 ```
@@ -62,7 +60,7 @@ providers config of the `omarchy.agents` widget in `~/.config/omarchy/shell.json
 Or via the CLI:
 
 ```bash
-omarchy bar set omarchy.agents providers '{"claude":{"enabled":false},"codex":{"enabled":false},"fireworks":{"enabled":false},"dsh":{"enabled":true}}' --json
+omarchy bar set omarchy.agents providers '{"dsh":{"enabled":true}}' --json
 ```
 
 Then reload the shell (`omarchy-shell shell reloadConfig` or `omarchy refresh`).
