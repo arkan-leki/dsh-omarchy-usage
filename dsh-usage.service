@@ -1,0 +1,7 @@
+[Unit]
+Description=Update dsh (DeepSeek Harness) usage record for the omarchy agents panel
+
+[Service]
+Type=oneshot
+ExecStart=%h/.local/bin/omarchy-agent-usage-dsh
+ExecStartPost=/bin/sh -c 'mkdir -p %h/.local/state/omarchy/agents/usage && %h/.local/bin/omarchy-agent-usage-dsh > %h/.local/state/omarchy/agents/usage/dsh.json'

@@ -1,0 +1,87 @@
+#!/usr/bin/env python3
+"""omarchy-agent-usage-dsh: usage collector for the DeepSeek Harness (dsh)."""
+import json, os, glob, subprocess, datetime
+from collections import defaultdict
+
+HOME = os.path.expanduser("~")
+SESSIONS = os.path.join(HOME, ".dsh", "sessions")
+
+def parse_session(path):
+    try:
+        data = subprocess.run(["zstd", "-d", "-c", path], capture_output=True, timeout=30).stdout.decode("utf-8", "ignore")
+    except Exception:
+        return None, []
+    session_ts = None
+    usages = []
+    for line in data.splitlines():
+        try:
+            o = json.loads(line)
+        except Exception:
+            continue
+        if o.get("type") == "session":
+            session_ts = o.get("createdAt")
+        if o.get("type") == "assistant/message":
+            d = o.get("data") or {}
+            u = d.get("usage")
+            src = (d.get("message") or {}).get("source") or {}
+            model = (src.get("model") if isinstance(src, dict) else src) or "unknown"
+            if isinstance(u, dict):
+                usages.append((o.get("time") or session_ts, model, u))
+    return session_ts, usages
+
+def bucket():
+    return {"inputTokens": 0, "outputTokens": 0, "cacheReadInputTokens": 0, "cacheCreationInputTokens": 0}
+
+today = datetime.date.today()
+day_tokens, day_msgs = defaultdict(int), defaultdict(int)
+model_buckets = defaultdict(bucket)
+model_day = defaultdict(int)
+today_prompts = today_total = sessions_seen = 0
+
+for f in glob.glob(os.path.join(SESSIONS, "*", "*", "session.jsonl.zstd")):
+    sts, usages = parse_session(f)
+    if not usages:
+        continue
+    sessions_seen += 1
+    for ts, model, u in usages:
+        inp = u.get("inputTokens") or 0
+        out = u.get("outputTokens") or 0
+        cache = u.get("cacheReadTokens") or 0
+        ccreate = u.get("cacheCreationTokens") or u.get("cacheWriteTokens") or 0
+        total = inp + out + cache + ccreate
+        try:
+            day = datetime.date.fromtimestamp((ts or sts or 0) / 1000).isoformat()
+        except Exception:
+            day = today.isoformat()
+        day_tokens[day] += total
+        day_msgs[day] += 1
+        b = model_buckets[model]
+        b["inputTokens"] += inp
+        b["outputTokens"] += out
+        b["cacheReadInputTokens"] += cache
+        b["cacheCreationInputTokens"] += ccreate
+        if day == today.isoformat():
+            today_prompts += 1
+            today_total += total
+            model_day[model] += total
+
+recent_days = []
+for i in range(6, -1, -1):
+    d = (today - datetime.timedelta(days=i)).isoformat()
+    recent_days.append({"date": d, "messageCount": day_msgs.get(d, 0), "tokens": day_tokens.get(d, 0)})
+
+record = {
+    "schemaVersion": 1,
+    "id": "dsh",
+    "name": "DeepSeek",
+    "updatedAt": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%S+00:00"),
+    "ready": True,
+    "hasLocalStats": True,
+    "todayPrompts": today_prompts,
+    "todaySessions": sessions_seen,
+    "todayTotalTokens": today_total,
+    "todayTokensByModel": model_day,
+    "recentDays": recent_days,
+    "modelUsage": {m: dict(b) for m, b in model_buckets.items()},
+}
+print(json.dumps(record, separators=(",", ":")))
