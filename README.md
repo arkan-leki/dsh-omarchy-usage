@@ -14,6 +14,19 @@ dsh usage — requests, tokens per day, and tokens per model.
 - Per-model breakdown with input / output / cache-read split
 - **Auto-refreshes every 15 minutes** (systemd user timer)
 
+## Quick install (one command)
+
+Clone and run the installer — it copies the collector, sets up the timer, enables
+dsh in the agents panel (without touching your other agents), and reloads the shell:
+
+```bash
+git clone https://github.com/arkan-leki/dsh-omarchy-usage.git
+cd dsh-omarchy-usage
+./install.sh
+```
+
+Or do it manually: see below.
+
 ## How it works
 
 1. dsh writes every conversation to `~/.dsh/sessions/<project>/<session-id>/session.jsonl.zstd` (zstd-compressed JSONL).
