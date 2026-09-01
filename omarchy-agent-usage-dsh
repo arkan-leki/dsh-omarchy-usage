@@ -73,7 +73,7 @@ for i in range(6, -1, -1):
 record = {
     "schemaVersion": 1,
     "id": "dsh",
-    "name": "DeepSeek",
+    "name": "DeepSeek Harness",
     "updatedAt": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%S+00:00"),
     "ready": True,
     "hasLocalStats": True,

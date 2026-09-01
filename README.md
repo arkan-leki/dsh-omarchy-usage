@@ -46,7 +46,7 @@ omarchy refresh
 {
   "schemaVersion": 1,
   "id": "dsh",
-  "name": "DeepSeek",
+  "name": "DeepSeek Harness",
   "todayPrompts": 38,
   "todayTotalTokens": 15068760,
   "recentDays": [{"date": "2026-09-02", "tokens": 15068760}],
