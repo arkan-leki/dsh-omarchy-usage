@@ -27,6 +27,28 @@ cd dsh-omarchy-usage
 
 Or do it manually: see below.
 
+## Quick install (one command, nothing left in home)
+
+Clones into /tmp, installs, and cleans up — nothing is left in your home folder
+except the installed files themselves:
+
+```bash
+git clone https://github.com/arkan-leki/dsh-omarchy-usage.git /tmp/dsh-omarchy-usage && \
+  cd /tmp/dsh-omarchy-usage && ./install.sh && \
+  cd ~ && rm -rf /tmp/dsh-omarchy-usage
+```
+
+The installer copies the collector + timer to the right places, enables dsh in the
+agents panel (without touching your other agents), and reloads the shell.
+
+Prefer keeping the clone? Then just:
+
+```bash
+git clone https://github.com/arkan-leki/dsh-omarchy-usage.git
+cd dsh-omarchy-usage
+./install.sh
+```
+
 ## How it works
 
 1. dsh writes every conversation to `~/.dsh/sessions/<project>/<session-id>/session.jsonl.zstd` (zstd-compressed JSONL).
